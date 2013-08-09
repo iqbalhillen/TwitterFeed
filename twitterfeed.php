@@ -22,7 +22,7 @@
 	date_default_timezone_set('America/Los_Angeles');
 	ini_set('display_errors', 0);
 
-	$user_screen_name = 'CHANGE_ME';
+	$user_screen_name = 'CHANGE ME';
 	$user_full_name = 'CHANGE ME TOO';
 
 
@@ -42,8 +42,7 @@
 
 	$api_params = array(
 		'count' => 40,
-		'contributor_details' => 'false',
-		'include_entities' => 'false'
+		'contributor_details' => 'false'
 	);
 
 // OAuth: 
@@ -177,11 +176,27 @@
 			
 			$created = date(DATE_ATOM, strtotime($row['created_at']));
 
-			$entry = htmlspecialchars($row['user']['screen_name'] . ': ' . $row['text']);
+            $entry = $row['text'];
 
+            $urls = $row['entities']['urls'];
+
+            foreach($urls as $u){
+                $entry = str_replace($u['url'], $u['expanded_url'], $entry);
+            }
+
+			$pics = $row['entities']['media'];
+
+            if($pics){
+				foreach($pics as $p){
+					$entry = str_replace($p['url'], $p['media_url'], $entry);
+				}
+			}
+
+
+            $entry = htmlspecialchars($entry);
 ?>
 	<entry>
-	<title><?=$entry?></title>
+	<title><?=$name . ': ' . $entry?></title>
 	<content type="html"><?=$entry?></content>
 	<id>tag:twitter.com,2007:http://twitter.com/<?=$screen_name?>/status/<?=$id?></id>
 	<published><?=$created?></published>
@@ -189,7 +204,7 @@
 	<link type="text/html" rel="alternate" href="http://twitter.com/<?=$screen_name?>/status/<?=$id?>"/>
 	<link type="image/png" rel="image" href="<?=$profile_image_url?>"/>
 	<author>
-	<name><?=$name?></name>
+	<name><?=$name?> @<?=$screen_name?></name>
 	<uri><?=$url?></uri>
 	</author>
 	</entry>
